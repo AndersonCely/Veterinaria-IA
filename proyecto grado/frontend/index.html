@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Veterinario IA</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #eef2f7;
+            color: #2c3e50;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1f4e79, #2980b9);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 30px auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #1f4e79;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #dcdcdc;
+            resize: none;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        textarea:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.2);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 18px;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.95;
+        }
+
+        .diagnostico-box {
+            background: #f8fbff;
+            border-left: 6px solid #3498db;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .diagnostico-box h3 {
+            margin-bottom: 10px;
+            color: #1f4e79;
+        }
+
+        .diagnostico-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+        }
+
+        .progress-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .progress {
+            width: 100%;
+            height: 24px;
+            background: #dfe6e9;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            transition: 0.5s;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .metric-card {
+            background: #f7f9fc;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.03);
+        }
+
+        .metric-card h4 {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .acc {
+            color: #27ae60;
+        }
+
+        .pre {
+            color: #f39c12;
+        }
+
+        .rec {
+            color: #e74c3c;
+        }
+
+        .chart-card {
+            margin-top: 25px;
+        }
+
+        .recomendacion-box {
+            margin-top: 25px;
+            background: #fff8e8;
+            border-left: 6px solid #f39c12;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .recomendacion-box h3 {
+            margin-bottom: 10px;
+            color: #d68910;
+        }
+
+        .recomendacion-text {
+            line-height: 1.6;
+            color: #555;
+            font-size: 15px;
+        }
+
+        .history-card {
+            margin-top: 25px;
+        }
+
+        .history-card h3 {
+            margin-bottom: 15px;
+            color: #1f4e79;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        table thead {
+            background: #1f4e79;
+            color: white;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+            font-size: 14px;
+        }
+
+        table tbody tr:hover {
+            background: #f4f8fb;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        canvas {
+            margin-top: 15px;
+        }
+
+        @media(max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>🐾 Sistema Inteligente Veterinario</h1>
+        <p>Procesamiento de Lenguaje Natural aplicado al diagnóstico preliminar</p>
+    </div>
+
+    <div class="container">
+
+        <!-- PANEL IZQUIERDO -->
+        <div class="card">
+
+            <h2>📋 Ingreso de síntomas</h2>
+
+            <textarea id="sintomas"
+                placeholder="Ejemplo: Mi perro tiene vómito, fiebre y pérdida de apetito"></textarea>
+
+            <button onclick="analizar()">
+                🔍 Analizar síntomas
+            </button>
+
+            <!-- HISTORIAL -->
+            <div class="history-card">
+
+                <h3>📜 Historial de consultas</h3>
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Síntomas</th>
+                            <th>Diagnóstico</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="historialBody">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <!-- PANEL DERECHO -->
+        <div class="card">
+
+            <div class="diagnostico-box">
+                <h3>Diagnóstico preliminar</h3>
+                <div id="diagnostico" class="diagnostico-text">-</div>
+            </div>
+
+            <!-- CONFIANZA -->
+            <div class="progress-container">
+
+                <div class="progress-title">
+                    <span>Confianza del modelo</span>
+                    <span id="confianza">0%</span>
+                </div>
+
+                <div class="progress">
+                    <div id="barra" class="progress-bar"></div>
+                </div>
+
+            </div>
+
+            <!-- MÉTRICAS -->
+            <div class="metrics">
+
+                <div class="metric-card">
+                    <h4>Accuracy</h4>
+                    <div id="acc" class="metric-value acc">0%</div>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Precision</h4>
+                    <div id="pre" class="metric-value pre">0%</div>
+                </div>
+
+                <div class="metric-card">
+                    <h4>Recall</h4>
+                    <div id="rec" class="metric-value rec">0%</div>
+                </div>
+
+            </div>
+
+            <!-- GRÁFICA -->
+            <div class="chart-card">
+                <canvas id="grafica"></canvas>
+            </div>
+
+            <!-- RECOMENDACIÓN -->
+            <div class="recomendacion-box">
+
+                <h3>💡 Recomendación</h3>
+
+                <p id="recomendacion" class="recomendacion-text">
+                    Esperando análisis...
+                </p>
+
+            </div>
+
+            <!-- AVISO ÉTICO -->
+            <div style="
+                margin-top:20px;
+                background:#fff3cd;
+                border-left:6px solid #f39c12;
+                padding:15px;
+                border-radius:12px;
+                color:#856404;
+                font-size:14px;
+                line-height:1.6;
+            ">
+
+                <strong>⚠️ Aviso Importante</strong><br><br>
+
+                Este sistema inteligente utiliza técnicas de Procesamiento de Lenguaje Natural (NLP) y Aprendizaje
+                Automático para analizar síntomas descritos en lenguaje natural y generar diagnósticos preliminares.
+
+                <br><br>
+
+                Los resultados obtenidos tienen únicamente fines informativos y de apoyo a la toma de decisiones. Por lo
+                tanto, no sustituyen la evaluación clínica, el diagnóstico profesional ni el tratamiento realizado por
+                un médico veterinario.
+
+                <br><br>
+
+                Ante cualquier síntoma grave o persistente, se recomienda acudir inmediatamente a un profesional
+                veterinario para una valoración completa de la mascota.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <strong>
+            Sistema Inteligente de Apoyo al Diagnóstico Veterinario basado en NLP
+        </strong>
+
+        <br><br>
+
+        Herramienta académica de apoyo desarrollada mediante técnicas de Inteligencia Artificial y Procesamiento de
+        Lenguaje Natural.
+
+        <br>
+
+        Los diagnósticos generados son preliminares y no reemplazan la valoración profesional de un médico veterinario.
+
+    </div>
+
+    <script>
+
+        let chart;
+
+        function limpiarTexto(texto) {
+
+            return texto
+                .toLowerCase()
+                .replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ\s]/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        async function analizar() {
+
+            const sintomas = document.getElementById("sintomas").value;
+
+            if (!sintomas.trim()) {
+                alert("Ingrese síntomas");
+                return;
+            }
+
+            const response = await fetch("http://localhost:8080/api/consultas", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sintomas
+                })
+            });
+
+            const data = await response.json();
+
+            //  Diagnóstico
+            document.getElementById("diagnostico").innerText =
+                data.diagnostico;
+
+            //  Confianza
+            document.getElementById("confianza").innerText =
+                data.confianza.toFixed(2) + "%";
+
+            document.getElementById("barra").style.width =
+                data.confianza + "%";
+
+            //  Métricas
+            document.getElementById("acc").innerText =
+                (data.accuracy * 100).toFixed(1) + "%";
+
+            document.getElementById("pre").innerText =
+                (data.precision * 100).toFixed(1) + "%";
+
+            document.getElementById("rec").innerText =
+                (data.recall * 100).toFixed(1) + "%";
+
+            //  Recomendación
+            document.getElementById("recomendacion").innerText =
+                data.recomendacion || "No hay recomendación disponible.";
+
+            //  Agregar historial
+            agregarHistorial(data, sintomas);
+
+            mostrarGrafica(data);
+        }
+
+        function agregarHistorial(data, sintomas) {
+
+            const tabla = document.getElementById("historialBody");
+            const fecha = data.fecha
+                ? new Date(data.fecha).toLocaleString("es-CO")
+                : "-";
+            const sintomasLimpios = limpiarTexto(sintomas);
+
+            const fila = `
+        <tr>
+            <td>${fecha}</td>
+            <td>${sintomasLimpios}</td>
+            <td>${data.diagnostico}</td>
+        </tr>
+    `;
+
+            tabla.innerHTML = fila + tabla.innerHTML;
+        }
+
+        function mostrarGrafica(data) {
+
+            const ctx = document.getElementById("grafica").getContext("2d");
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Accuracy', 'Precision', 'Recall'],
+                    datasets: [{
+                        label: 'Rendimiento del modelo (%)',
+                        data: [
+                            data.accuracy * 100,
+                            data.precision * 100,
+                            data.recall * 100
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+    </script>
+
+</body>
+
+</html>
